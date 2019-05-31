@@ -16,9 +16,7 @@ from torchvision import models
 from torchvision import transforms as T
 from torchvision.datasets import MNIST, CIFAR10
 from tqdm import tqdm_notebook as tqdm
-
 from Callback import Callback
-
 
 
 def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.nll_loss):
@@ -26,11 +24,11 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
     A generic structure of training loop.
     """
     model.to(device)
-    
+
     cb = callbacks
-    
+
     cb.training_started(phases=phases, optimizer=opt)
-    
+
     for epoch in range(1, epochs + 1):
         cb.epoch_started(epoch=epoch)
 
@@ -64,12 +62,15 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
 
             cb.phase_ended(phase=phase)
 
-        cb.epoch_ended(phases=phases, epoch=epoch)
+        cb.epoch_ended(phases=phases, epoch=epoch,
+                       optimizer=opt, model=model, loss=loss)
 
-    cb.training_ended(phases=phases)
+    cb.training_ended(phases=phases, model=model)
+
 
 def place_and_unwrap(batch, dev):
     x, *y = batch
+    x = x.permute(0, 3, 1, 2)  # reshape f
     x = x.to(dev)
     y = [tensor.to(dev) for tensor in y]
     if len(y) == 1:
