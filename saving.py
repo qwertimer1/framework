@@ -34,6 +34,11 @@ class save_model(Callback):
         print(f"Checkpoint Saved : {PATH}")
 
     def training_ended(self, model, **kwargs):
-        final_model = Path(self.model_save + str(time.time) + 'pt')
+        file_loc = [str(self.training_path), '\\checkpoints', '\\', str(
+            self.model_save), '_', str(time.now()), '.pt']
+        s = ""
+        s = s.join(file_loc)
+        PATH = Path(s)
+        final_model = Path(PATH)
         torch.save(model, final_model)
         print(f'Experiment Results saved {final_model}')
