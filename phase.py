@@ -1,4 +1,5 @@
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
+
 
 class Phase:
     """
@@ -22,10 +23,22 @@ class Phase:
 
     @property
     def last_loss(self):
+        """
+        Gets last loss value
+
+        Returns:
+            loss: returns loss result
+        """
         return self.losses[-1] if self.losses else None
 
     @property
     def last_metrics(self):
+        """
+        gets last metrics
+
+        Returns:
+            metrics:
+        """
         metrics = OrderedDict()
         metrics[f'{self.name}_loss'] = self.last_loss
         for name, values in self.metrics.items():
@@ -34,6 +47,12 @@ class Phase:
 
     @property
     def metrics_history(self):
+        """
+        Stores the metrics history
+
+        Returns:
+            metrics:
+        """
         metrics = OrderedDict()
         for name, values in self.metrics.items():
             metrics[f'{self.name}_{name}'] = values
@@ -43,8 +62,9 @@ class Phase:
         self.losses.append(loss)
 
     def update_metric(self, name, value):
+        """
+        Updates metrics related to the phase
+        """
         if name not in self.metrics:
             self.metrics[name] = []
         self.metrics[name].append(value)
-
-

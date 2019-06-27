@@ -17,6 +17,7 @@ class CosineAnnealingSchedule:
     """
     The schedule class that returns eta multiplier in range from 0.0 to 1.0.
     """
+
     def __init__(self, eta_min=0.0, eta_max=1.0, t_max=100, t_mult=2):
         self.eta_min = eta_min
         self.eta_max = eta_max
@@ -30,12 +31,14 @@ class CosineAnnealingSchedule:
         eta_min, eta_max, t_max = self.eta_min, self.eta_max, self.t_max
 
         t = self.iter % t_max
-        eta = eta_min + 0.5 * (eta_max - eta_min) * (1 + math.cos(math.pi * t / t_max))
+        eta = eta_min + 0.5 * (eta_max - eta_min) * \
+            (1 + math.cos(math.pi * t / t_max))
         if t == 0:
             self.iter = 0
             self.t_max *= self.t_mult
 
         return eta
+
 
 class OneCycleSchedule:
 
@@ -57,7 +60,8 @@ class OneCycleSchedule:
             eta_min=0 if decay_to_zero else eta_min,
             eta_max=eta_max,
             t_max=self.t_cosine, t_mult=1)
-        self.linear = lambda x: x * (eta_max - eta_min) / self.t_linear + eta_min
+        self.linear = lambda x: x * \
+            (eta_max - eta_min) / self.t_linear + eta_min
 
         self.iter = 0
 
@@ -67,6 +71,7 @@ class OneCycleSchedule:
             return self.linear(self.iter)
         else:
             return self.cosine.update()
+
 
 class ParameterUpdater:
 
@@ -105,7 +110,8 @@ class ParameterUpdater:
                     params = self.start_parameters[i]
                     inverse = item.get('inverse', False)
                     start_value = params.get(name)
-                    group[name] = start_value * ((1 - mult) if inverse else mult)
+                    group[name] = start_value * \
+                        ((1 - mult) if inverse else mult)
 
 
 class Scheduler(Callback):
@@ -118,7 +124,8 @@ class Scheduler(Callback):
         self.history = []
 
     def training_started(self, optimizer, **kwargs):
-        self.updater = ParameterUpdater(self.schedule, self.params_conf, optimizer)
+        self.updater = ParameterUpdater(
+            self.schedule, self.params_conf, optimizer)
         self.updater.save_start_values()
 
     def batch_ended(self, phase, **kwargs):

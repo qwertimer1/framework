@@ -1,28 +1,25 @@
-
-from collections import defaultdict, OrderedDict
-import math
-from pathlib import Path
-import re
-import sys
-
-import matplotlib.pyplot as plt
-import pandas as pd
+"""
+training module for training the neural network
+"""
 import torch
-from torch import nn
-from torch import optim
 from torch.nn import functional as F
-from torch.utils.data import DataLoader
-from torchvision import models
-from torchvision import transforms as T
-from torchvision.datasets import MNIST, CIFAR10
-from tqdm import tqdm_notebook as tqdm
-from Callback import Callback
 
 
 def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.nll_loss):
+    """    A generic structure of training loop.
+
+    Arguments:
+        model {[type]} -- [description]
+        opt {[type]} -- [description]
+        phases {[type]} -- [description]
+
+    Keyword Arguments:
+        callbacks {[type]} -- [description] (default: {None})
+        epochs {int} -- [description] (default: {1})
+        device {bool} -- [description] (default: {False})
+        loss_fn {[type]} -- [description] (default: {F.nll_loss})
     """
-    A generic structure of training loop.
-    """
+
     model.to(device)
 
     cb = callbacks
@@ -33,6 +30,7 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
         cb.epoch_started(epoch=epoch)
 
         for phase in phases:
+            # If phase not test
             n = len(phase.loader)
             cb.phase_started(phase=phase, total_batches=n)
             is_training = phase.grad
@@ -63,13 +61,25 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
             cb.phase_ended(phase=phase)
 
         cb.epoch_ended(phases=phases, epoch=epoch,
-                       optimizer=opt, model=model, loss=loss)
+                       optimizer=opt, model=model, loss=loss, output=out, target=y)
 
-    cb.training_ended(phases=phases, model=model)
+    cb.training_ended(phases=phases, model=model, target=y)
 
 
 def place_and_unwrap(batch, dev):
+    """Unpacks data and target from batch and rearranges the data into ()
+
+    Arguments:
+        batch: current batch of data
+        dev: Device (default: cuda)
+
+    Returns:
+        x: unpacked input data
+        y: target data as tensor
+    """
+
     x, *y = batch
+
     x = x.permute(0, 3, 1, 2)  # reshape f
     x = x.to(dev)
     y = [tensor.to(dev) for tensor in y]

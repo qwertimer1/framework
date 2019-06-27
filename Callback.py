@@ -1,5 +1,19 @@
+"""
+Callback module for providing the base class of the event handler style training known as callbacks.
+"""
+
 import re
 
+
+def to_snake_case(string):
+    """Converts CamelCase string into snake_case."""
+
+    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
+
+
+def classname(obj):
+    return obj.__class__.__name__
 
 
 class Callback:
@@ -10,6 +24,7 @@ class Callback:
     execution. The signature of functions is as broad as possible to allow
     flexibility and customization in descendant classes.
     """
+
     def training_started(self, **kwargs): pass
 
     def training_ended(self, **kwargs): pass
@@ -34,32 +49,26 @@ class Callback:
 
     def after_backward_pass(self, **kwargs): pass
 
-def to_snake_case(string):
-    """Converts CamelCase string into snake_case."""
-    
-    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
-
-def classname(obj):
-    return obj.__class__.__name__
-
 
 class CallbacksGroup(Callback):
     """
     Groups together several callbacks and delegates training loop 
     notifications to the encapsulated objects.
     """
+
     def __init__(self, callbacks):
         self.callbacks = callbacks
-        self.named_callbacks = {to_snake_case(classname(cb)): cb for cb in self.callbacks}
-        
+        self.named_callbacks = {to_snake_case(
+            classname(cb)): cb for cb in self.callbacks}
+
     def __getitem__(self, item):
         item = to_snake_case(item)
         if item in self.named_callbacks:
             return self.named_callbacks[item]
         raise KeyError(f'callback name is not found: {item}')
-        
-    def training_started(self, **kwargs): self.invoke('training_started', **kwargs)
+
+    def training_started(
+        self, **kwargs): self.invoke('training_started', **kwargs)
 
     def training_ended(self, **kwargs): self.invoke('training_ended', **kwargs)
 
@@ -75,14 +84,18 @@ class CallbacksGroup(Callback):
 
     def batch_ended(self, **kwargs): self.invoke('batch_ended', **kwargs)
 
-    def before_forward_pass(self, **kwargs): self.invoke('before_forward_pass', **kwargs)
+    def before_forward_pass(
+        self, **kwargs): self.invoke('before_forward_pass', **kwargs)
 
-    def after_forward_pass(self, **kwargs): self.invoke('after_forward_pass', **kwargs)
+    def after_forward_pass(
+        self, **kwargs): self.invoke('after_forward_pass', **kwargs)
 
-    def before_backward_pass(self, **kwargs): self.invoke('before_backward_pass', **kwargs)
+    def before_backward_pass(
+        self, **kwargs): self.invoke('before_backward_pass', **kwargs)
 
-    def after_backward_pass(self, **kwargs): self.invoke('after_backward_pass', **kwargs)
-    
+    def after_backward_pass(
+        self, **kwargs): self.invoke('after_backward_pass', **kwargs)
+
     def invoke(self, method, **kwargs):
         for cb in self.callbacks:
             getattr(cb, method)(**kwargs)
