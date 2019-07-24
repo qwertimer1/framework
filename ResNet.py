@@ -79,7 +79,7 @@ class ResNet(nn.Module):
         self.layer3 = self.make_layer(block, 256, layers[2], 2)
 
         self.avg_pool = nn.AvgPool2d(32)
-        self.fc = nn.Linear(256, num_classes)
+        self.fc = nn.Linear(5376, num_classes)
 
     def make_layer(self, block, out_channels, blocks, stride=1):
         """Build Residual block layers
@@ -115,13 +115,19 @@ class ResNet(nn.Module):
             output
         """
         out = self.conv(x)
+
         out = self.bn(out)
         out = self.relu(out)
         out = self.layer1(out)
+
         out = self.layer2(out)
+
         out = self.layer3(out)
+      
         out = self.avg_pool(out)
+    
         out = out.view(out.size(0), -1)
+
         out = self.fc(out)
 
         return out

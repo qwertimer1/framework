@@ -1,0 +1,68 @@
+{
+
+    "name": "RNN Net",
+    "device": "cuda",
+    "gpu": 0,
+    
+
+    "LOCATIONS": {
+
+        "ROOT": "E:/",
+        "project": "Masters/",
+        "dataset": "Datasets/Master Whale Sounds/Master Whale Sounds/snapshots 3s editable/",
+        "shuffle_dataset": true
+    },
+
+    "LOGGING": {
+
+        "manifest_name": "manifest.csv",
+        "log_file": "log.txt",
+        "log_location": "E:/2019 Code//Experiments//"
+
+    },
+
+    "BASIC_PARAMETERS": {
+
+        "random_seed": 42,
+        "n_bands": 3,
+        "ignored_labels": 0,
+        "weights": "None",
+        "n_jobs": 1
+    },
+
+    "TRAINING PARAMETERS": {
+
+        "sample_percentage": 10,
+        "n_runs": 1
+
+    },
+
+    "HYPERPARAMETERS": {
+
+        "validation_split": 0.2,
+        "test_split": 0.1,
+        "patch_size": 5,
+        "center_pixel": true,
+        "n_classes": 12,
+        "n_bands": 3,
+        "batch_size": 2,
+        "learning_rate": 1e-2,
+        "epoch": 10,
+        "test_stride": 3,
+        "disp_batch": 5
+
+    },
+
+    "model": "Net",
+    "scheduler": "optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=epoch//4, verbose=True))",
+    "supervision": "full",
+
+    "AUGMENTATION": {
+
+        "flip_augmentation": false,
+        "radiation_augmentation": false,
+        "mixture_augmentation": false
+
+    }
+
+}
