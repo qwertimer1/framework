@@ -1,7 +1,7 @@
 import torch
 import math
 from typing import Optional
-import functional as F
+import functional_spec as F
 import matplotlib.pyplot as plt
 import PIL
 
@@ -12,6 +12,10 @@ class Transform():
     def __call__(self,o):  return o  # transform
     def decode(self,o):    return o  # reverse transform for display
 
+
+class MakeRGB(Transform):
+    def __call__(self, item): return item.convert('RGB')
+        
 class ToCuda(Transform):
     """For Audio data
     Arguments:
@@ -22,10 +26,15 @@ class ToCuda(Transform):
         sr = sampling rate
     """
     _order=30
+    
     def __call__(self, ad):
-        sig,sr = ad
+        sig = ad
         print("ToCuda")
-        return (sig.cuda(), sr)
+        return sig.cuda()   
+    #def __call__(self, ad):
+    #    sig,sr = ad
+    #    print("ToCuda")
+    #    return (sig.cuda(), sr)
 class to_tensor(Transform):
     _order = 1
     def __call__(self, ad):
@@ -74,6 +83,7 @@ class Spectrogrammer(Transform):
 
     def __call__(self, ad):
         sig,sr = ad
+        sig =sig.to(torch.device("cuda"))
         if self.to_mel:
             spec = MelSpectrogram(sr, self.n_fft, self.ws, self.hop, self.f_min, 
                                              self.f_max, self.pad, self.n_mels)(sig)

@@ -9,7 +9,7 @@ from torch.utils.data import SubsetRandomSampler,  DataLoader
 from collections import OrderedDict
 import re
 import transforms
-from transforms import Spectrogrammer, show_spectro
+
 from typing import *
 import utils
 from utils import util_to_tensor, file_utils, ItemList, CategoryProcessor, LabeledData, parent_labeler
@@ -36,7 +36,7 @@ class AudioList(ItemList):
     
     def get(self, fn): 
         sig,sr = librosa.load(fn)
-        sig = util_to_tensor(sig, torch.float)
+        sig = util_to_tensor(sig, torch.FloatTensor)
         return (sig, sr)
 
 def random_splitter(fn, p_valid, **kwargs):
@@ -113,15 +113,14 @@ class DataBunch():
 
 
 
-def main():
+def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\snapshots 3s editable", training_type = "image"):
 
         #export
     print("start data loading")
     bs = 4
-    training_type = "audio"
     image_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('image/'))
     audio_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('audio/'))
-    path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\snapshots 3s editable"
+    #path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\snapshots 3s editable"
 
     #all_files = get_files(path, audio_extensions, recurse= True)
     
@@ -129,26 +128,29 @@ def main():
         # print(f"length of data = {len(il)}")
         #print(il)
  
-    print("audio files")
-    speccer = Spectrogrammer(to_db=True, n_fft=1024, n_mels=64, top_db=80)
-    tfms = [transforms.ToCuda(), transforms.to_byte_tensor(), transforms.to_float_tensor()]
-    al = AudioList.from_files(path, audio_extensions, tfms = tfms)
+    print("image files")
+    tfms = [transforms.MakeRGB(), transforms.to_byte_tensor(), transforms.to_float_tensor()]
+    
+    il = ImageList.from_files(path, image_extensions, tfms = tfms)
         #print(al)
     #samplers = train_test_valid_split(il)
-    dataset = il if training_type == "image" else al 
+    #speccer = Spectrogrammer(to_db=True, n_fft=1024, n_mels=64, top_db=80)
+    
+    dataset = il #if training_type == "image"
     print("processing...") 
     sd = SplitData.split_by_func(dataset, partial(random_splitter, p_valid = 0.3))
     #print(sd.train)
     ll = label_by_func(sd, parent_labeler, proc_y=CategoryProcessor())
-    
+   
     #databunchify(dataset, samplers, bs)
-    print("to databunch")
 
-    ll.to_databunch(ll, bs, c_in=3, c_out=12, num_workers=4)
+    ll = ll.to_databunch(ll, bs, c_in=3, c_out=12, num_workers=4)
+    return(ll)
 
-    speccer = Spectrogrammer(to_db=True, n_fft=1024, n_mels=64, top_db=80)
-    
-    show_spectro(speccer(ll.train[0][0]))
+
+
+def main():
+    ll = get_data()
 #### CURRENT CODE CREATES A NICE LITTLE AUDIOLIST OR IMAGE LIST
 if __name__ == "__main__":
     main()

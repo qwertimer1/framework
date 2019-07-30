@@ -77,12 +77,12 @@ def place_and_unwrap(batch, dev):
         x: unpacked input data
         y: target data as tensor
     """
-
+    print(f"batch = {batch}")
     x, *y = batch
     #x = x.permute(0, 3, 1, 2)  # reshape f
     x = x.to(dev)
 
-    y = [tensor.to(dev, dtype=torch.int64) for tensor in y]
+    #y = [tensor.to(dev, dtype=torch.int64) for tensor in y]
     if len(y) == 1:
         [y] = y
     return x, y

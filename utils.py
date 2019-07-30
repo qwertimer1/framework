@@ -81,6 +81,29 @@ class utils():
         audio_snippets_folders = location.joinpath(processed)
         return(ROOT, audio_snippets_folders) 
 
+    @staticmethod
+    def get_classes(path):
+        res = []
+        dirs = [x for x in path.iterdir() if x.is_dir()]
+        for cls in dirs:
+            val = os.path.basename(cls)
+            res.append(val)
+        classes = res
+        return dirs, classes
+    @staticmethod
+    def get_folders(x):
+        base = x["LOCATIONS"]
+        ROOT = base["ROOT"]
+        project = base["project"]
+        dataset = base["dataset"]
+        return ROOT, project, dataset
+    
+    @staticmethod
+    def experiment_path_build(x):
+        ROOT, project, dataset = utils.get_folders(x)
+        path = Path(ROOT).joinpath(project).joinpath(dataset)
+        return ROOT, path
+
     @staticmethod    
     def make_manifest(path, manifest_name = 'manifest.csv', ext = '.wav', headerfile = False):
     
@@ -188,7 +211,7 @@ class file_utils():
             return file_utils._get_files(path, f, extensions)
 def util_to_tensor(ad, tensor):
        
-    return torch.from_numpy(ad).type_as(tensor)
+    return torch.from_numpy(ad)
 
 def compose(x, funcs, *args, order_key='_order', **kwargs):
     key = lambda o: getattr(o, order_key, 0)

@@ -22,8 +22,9 @@ from Parameters_schedule import Scheduler, OneCycleSchedule
 from phase import Phase
 from train import train
 from utils import ProgressBar
-from utils import utils, train_test_valid_split
+from utils import utils#, train_test_valid_split
 from loss import RollingLoss
+from databunch import get_data
 
 
 def make_phases(dataset, training, valid, test, bs=32, n_jobs=0, disp_batch=5):
@@ -37,6 +38,16 @@ def make_phases(dataset, training, valid, test, bs=32, n_jobs=0, disp_batch=5):
                                   sampler=valid, num_workers=n_jobs), grad=False),
         Phase('test', DataLoader(dataset, disp_batch,
                                  sampler=test, num_workers=n_jobs), grad=False),
+    ]
+
+def make_phases_databunch(dl, bs=32, n_jobs=0, disp_batch=5):
+    """
+    make phases builds the dataloaders for each training phase and implements flags for some callback methods.
+    """
+    return [
+        Phase('train', dl.train_dl),
+        Phase('valid', dl.valid_dl, grad=False),
+        Phase('test', dl.valid_dl, grad=False),
     ]
 
 
@@ -83,16 +94,19 @@ def main():
     
     ds = Whale_Image_Dataset(path, csv_file)
     # Params need moving
-    
-
+    #Hard code for now. Need to implement path to allow the user to choose the data
+    data = get_data()
+    print(data.c_in)
   
-    train_ds_sampler, valid_ds_sampler, test_ds_sampler = train_test_valid_split(
-        ds, shuffle_dataset, validation_split, test_split, random_seed)
+    #train_ds_sampler, valid_ds_sampler, test_ds_sampler = train_test_valid_split(
+    #    ds, shuffle_dataset, validation_split, test_split, random_seed)
  
 
-    phases = make_phases(ds, train_ds_sampler,
-                         valid_ds_sampler, test_ds_sampler, bs=bs, n_jobs=n_jobs)
-    
+#    phases = make_phases(ds, train_ds_sampler,
+#                        valid_ds_sampler, test_ds_sampler, bs=bs, n_jobs=n_jobs)
+    phases = make_phases_databunch(data, bs=bs, n_jobs=n_jobs)  
+   
+
     model = ResNet(block = ResidualBlock, layers = [2,4,8], in_channels=n_bands, num_classes=n_classes)
     opt = optim.Adam(model.parameters(), lr=lr)
     training_params = {'Dataset Path': path,

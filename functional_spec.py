@@ -9,6 +9,7 @@ Returns:
 
 import torch
 import math
+import librosa
 
 
 
@@ -29,9 +30,12 @@ def scale(tensor, factor):
 
     return tensor / factor
 
-def _stft(input, n_fft, hop_length, win_length, window, center, pad_mode, normalized, onesided):
+def _stft(input, n_fft, hop_length, win_length, window, center, pad_mode ):
     # type: (Tensor, int, Optional[int], Optional[int], Optional[Tensor], bool, str, bool, bool) -> Tensor
-    return torch.stft(input, n_fft, hop_length, win_length, window, center, pad_mode, normalized, onesided)
+    #input = input.to(torch.device("cuda"))
+    input = input.cpu().data.numpy()
+
+    return librosa.stft(input, n_fft, hop_length, win_length, window, center, pad_mode)
 
    
 def spectrogram(sig, pad, window, n_fft, hop, ws, power, normalize):
@@ -61,7 +65,7 @@ def spectrogram(sig, pad, window, n_fft, hop, ws, power, normalize):
 
     # default values are consistent with librosa.core.spectrum._spectrogram
     spec_f = _stft(sig, n_fft, hop, ws, window,
-                   True, 'reflect', False, True).transpose(1, 2)
+                   True, 'reflect').transpose(1, 2)
 
     if normalize:
         spec_f /= window.pow(2).sum().sqrt()

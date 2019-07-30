@@ -81,7 +81,7 @@ class CSVLogger(Callback):
 
         """
         print(self.training_params)
-        with open(self.filename, 'w') as csvfile:
+        with open(self.filename, 'a') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([self.training_params])
 
