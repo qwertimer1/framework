@@ -45,8 +45,8 @@ class to_byte_tensor(Transform):
 
         res = torch.ByteTensor(torch.ByteStorage.from_buffer(ad.tobytes()))
         w,h = ad.size
-        print('to_byte_tensor')
-        print(type(res))
+        #print('to_byte_tensor')
+        #print(type(res))
         return res.view(h,w,-1).permute(2,0,1)
     
 

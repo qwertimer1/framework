@@ -8,7 +8,8 @@ import numpy as np
 from torch.utils.data import SubsetRandomSampler,  DataLoader
 from collections import OrderedDict
 import re
-import transforms
+import torchvision.transforms as transforms
+import user_transforms as trfms
 
 from typing import *
 import utils
@@ -60,7 +61,7 @@ class SplitData():
     @classmethod
     def split_by_func(cls, il, f):
         lists = map(il.new, split_by_func(il.items, f))
-        print(f"Splitting - {lists}")
+        #print(f"Splitting - {lists}")
         return cls(*lists)
 
     def __repr__(self): return f'{self.__class__.__name__}\nTrain: {self.train}\nValid: {self.valid}\n'
@@ -117,7 +118,7 @@ def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale So
 
         #export
     print("start data loading")
-    bs = 4
+    bs = 8
     image_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('image/'))
     audio_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('audio/'))
     #path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\snapshots 3s editable"
@@ -129,7 +130,7 @@ def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale So
         #print(il)
  
     print("image files")
-    tfms = [transforms.MakeRGB(), transforms.to_byte_tensor(), transforms.to_float_tensor()]
+    tfms = [trfms.MakeRGB(), trfms.to_byte_tensor(), trfms.to_float_tensor(), transforms.CenterCrop([300, 300])]
     
     il = ImageList.from_files(path, image_extensions, tfms = tfms)
         #print(al)
