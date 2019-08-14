@@ -24,12 +24,15 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
 
     cb = callbacks
 
+
     cb.training_started(phases=phases, optimizer=opt)
 
     for epoch in range(1, epochs + 1):
+
         cb.epoch_started(epoch=epoch)
 
         for phase in phases:
+
             # If phase not test
             n = len(phase.loader)
             cb.phase_started(phase=phase, total_batches=n)
@@ -37,6 +40,7 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
             model.train(is_training)
 
             for batch in phase.loader:
+
 
                 phase.batch_index += 1
                 cb.batch_started(phase=phase, total_batches=n)
@@ -54,7 +58,7 @@ def train(model, opt, phases, callbacks=None, epochs=1, device=False, loss_fn=F.
                     loss.backward()
                     cb.after_backward_pass()
                     opt.step()
-
+   
                 phase.batch_loss = loss.item()
                 cb.batch_ended(phase=phase, output=out, target=y)
 

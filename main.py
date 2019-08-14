@@ -12,9 +12,10 @@ from torch.utils.data import DataLoader
 
 from Accuracy import Accuracy
 from Callback import Callback, CallbacksGroup
-from datasets import Whale_Image_Dataset
+from datasets import Whale_Audio_Dataset
 from logger import StreamLogger, CSVLogger
 from ResNet import ResNet, ResidualBlock
+from net import Autoencoder as AE
 #from net import ResNet as Net
 from saving import save_model
 import Parameters_schedule
@@ -44,7 +45,9 @@ def make_phases_databunch(dl, bs=32, n_jobs=0, disp_batch=5):
     """
     make phases builds the dataloaders for each training phase and implements flags for some callback methods.
     """
-    return [
+    print(dl.train_dl)
+
+    return[
         Phase('train', dl.train_dl),
         Phase('valid', dl.valid_dl, grad=False),
         Phase('test', dl.valid_dl, grad=False),
@@ -70,7 +73,6 @@ def main():
     exp_loc = Path(x["LOGGING"]["log_location"])
 
     n_classes = hyperparams['n_classes']
-    patch_size = hyperparams['patch_size']
 
 
     _, path = utils.experiment_path_build(x)
@@ -91,12 +93,19 @@ def main():
 
 
     csv_file = str(path) +'/' + 'Whalemanifest.csv' 
+    ###---------------------###
+    ##Old file design
+
+    #ds = Whale_Audio_Dataset(path, csv_file)
+    ###---------------------###
     
-    ds = Whale_Image_Dataset(path, csv_file)
+    
     # Params need moving
     #Hard code for now. Need to implement path to allow the user to choose the data
-    data = get_data()
-    print(data.c_in)
+
+    #This is the code for the databunch
+    data = get_data(path = 'E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\Whale Unzipped - Good', training_type="audio")
+    print(data.train_ds)
   
     #train_ds_sampler, valid_ds_sampler, test_ds_sampler = train_test_valid_split(
     #    ds, shuffle_dataset, validation_split, test_split, random_seed)
@@ -106,14 +115,15 @@ def main():
 #                        valid_ds_sampler, test_ds_sampler, bs=bs, n_jobs=n_jobs)
     phases = make_phases_databunch(data, bs=bs, n_jobs=n_jobs)  
    
-
-    model = ResNet(block = ResidualBlock, layers = [2,4,8], in_channels=n_bands, num_classes=n_classes)
+    model = AE(in_dim = 176400, h_dim = 1200).to(default_device)
+    #model = ResNet(block = ResidualBlock, layers = [2,4,8], in_channels=n_bands, num_classes=n_classes)
+    
+    
     opt = optim.Adam(model.parameters(), lr=lr)
     training_params = {'Dataset Path': path,
                        'Experiment Path': exp_path,
                        'number of classes': n_classes,
                        'number of bands': n_bands,
-                       'patch size': patch_size,
                        'test_train Split': {
                            'validation split': validation_split,
                            'shuffle dataset': shuffle_dataset,

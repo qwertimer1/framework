@@ -84,7 +84,7 @@ class audio_builder():
                 next(spamreader, None)
                 for row in spamreader:
                     self._build_audio_item(row, audioitem, i)
-    def get_output_filename(self, i):
+    def get_output_filename(self):
         """
         builds filename for each file
         """
@@ -106,12 +106,17 @@ class audio_builder():
         start = row['start time']
         #csv file - end time
         end = row['end time']
-        start_mod = float(start) - 0.5
+        #start_mod = float(start) - 1
+        
         elapsed = float(end) - float(start)
-        duration = elapsed + 0.5      
+        print(f"elapsed = {elapsed}")
+        start_mod = (start + (elapsed/2)) - 1
+        duration = (elapsed/2) + 1
+        print(f"start mod = {start_mod}")
+
+        print(f"duration {duration}")
         data, sr = librosa.load(self.audiofilename, offset = start_mod, duration= duration)
-        self.get_output_filename(i)
-        librosa.output.write_wav(self.get_output_filename(start), data, sr)
+        librosa.output.write_wav(self.get_output_filename(), data, sr)
     def compare_items(self):
         """
         

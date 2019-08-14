@@ -35,7 +35,7 @@ def _stft(input, n_fft, hop_length, win_length, window, center, pad_mode ):
     #input = input.to(torch.device("cuda"))
     input = input.cpu().data.numpy()
 
-    return librosa.stft(input, n_fft, hop_length, win_length, window, center, pad_mode)
+    return torch.stft(input, n_fft, hop_length, win_length, window, center, pad_mode)
 
    
 def spectrogram(sig, pad, window, n_fft, hop, ws, power, normalize):

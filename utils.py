@@ -199,12 +199,16 @@ class file_utils():
         path = Path(path)
         extensions = file_utils.setify(extensions)
         extensions = {e.lower() for e in extensions}
+
         if recurse:
+
             res = []
             for i,(p,d,f) in enumerate(os.walk(path)): # returns (dirpath, dirnames, filenames)
                 if include is not None and i==0: d[:] = [o for o in d if o in include]
                 else:                            d[:] = [o for o in d if not o.startswith('.')]
+
                 res += file_utils._get_files(p, f, extensions)
+
             return res
         else:
             f = [o.name for o in os.scandir(path) if o.is_file()]

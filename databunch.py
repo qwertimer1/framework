@@ -11,7 +11,7 @@ import re
 import torchvision.transforms as transforms
 import user_transforms as trfms
 
-from typing import *
+from typing import Iterable
 import utils
 from utils import util_to_tensor, file_utils, ItemList, CategoryProcessor, LabeledData, parent_labeler
 
@@ -20,25 +20,29 @@ from utils import util_to_tensor, file_utils, ItemList, CategoryProcessor, Label
 
 
 class ImageList(ItemList):
-    image_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('image/'))
     @classmethod
     def from_files(cls, path, extensions=None, recurse=True, include=None, **kwargs):
+        image_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('image/'))
+    
         if extensions is None: extensions = image_extensions
         return cls(file_utils.get_files(path, extensions, recurse=recurse, include=include), path, **kwargs)
     
     def get(self, fn): return PIL.Image.open(fn)
     
 class AudioList(ItemList):
-    audio_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('audio/'))
     @classmethod
     def from_files(cls, path, extensions=None, recurse=True, include=None, **kwargs):
+        audio_extensions = set(k for k,v in mimetypes.types_map.items() if v.startswith('audio/'))
+    
         if extensions is None: extensions = audio_extensions
         return cls(file_utils.get_files(path, extensions, recurse=recurse, include=include), path, **kwargs)
     
     def get(self, fn): 
         sig,sr = librosa.load(fn)
-        sig = util_to_tensor(sig, torch.FloatTensor)
-        return (sig, sr)
+        #sig = util_to_tensor(sig, torch.FloatTensor)
+        #sig = trfms.to_byte_tensor_audio(sig)
+        
+        return (sig)
 
 def random_splitter(fn, p_valid, **kwargs):
     return random.random() < p_valid
@@ -49,6 +53,7 @@ def split_by_func(items, f):
     # `None` values will be filtered out
     f = [o for o,m in zip(items,mask) if m==False]
     t = [o for o,m in zip(items,mask) if m==True ]
+    ###READD iterable
     return f,t
 
 class SplitData():
@@ -114,7 +119,7 @@ class DataBunch():
 
 
 
-def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\snapshots 3s editable", training_type = "image"):
+def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale Sounds\\Whale Unzipped - Good", training_type = "image"):
 
         #export
     print("start data loading")
@@ -129,15 +134,22 @@ def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale So
         # print(f"length of data = {len(il)}")
         #print(il)
  
-    print("image files")
-    tfms = [trfms.MakeRGB(), trfms.to_byte_tensor(), trfms.to_float_tensor(), transforms.CenterCrop([300, 300])]
-    
-    il = ImageList.from_files(path, image_extensions, tfms = tfms)
+    if training_type == "image":
+        print("image files")
+        tfms = [trfms.MakeRGB(), trfms.to_byte_tensor(), trfms.to_float_tensor(), transforms.CenterCrop([300, 300])]
+        
+        dataset = ImageList.from_files(path, image_extensions, recurse = True, tfms = tfms)
+    else:
+        print("audio files")
+
+        tfms = [trfms.to_byte_tensor_audio(), trfms.to_float_tensor()]
+        dataset = AudioList.from_files(path, audio_extensions, recurse = True, tfms = tfms)
+        print(dataset)
         #print(al)
     #samplers = train_test_valid_split(il)
     #speccer = Spectrogrammer(to_db=True, n_fft=1024, n_mels=64, top_db=80)
     
-    dataset = il #if training_type == "image"
+    #dataset = il #if training_type == "image"
     print("processing...") 
     sd = SplitData.split_by_func(dataset, partial(random_splitter, p_valid = 0.3))
     #print(sd.train)
@@ -145,7 +157,7 @@ def get_data(path = "E:\\Masters\\Datasets\\Master Whale Sounds\\Master Whale So
    
     #databunchify(dataset, samplers, bs)
 
-    ll = ll.to_databunch(ll, bs, c_in=3, c_out=12, num_workers=4)
+    ll = ll.to_databunch(ll, bs, c_in=1, c_out=12, num_workers=4)
     return(ll)
 
 

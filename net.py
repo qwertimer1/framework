@@ -7,10 +7,10 @@ from torchvision import transforms as T
 from torchvision.datasets import MNIST, CIFAR10
 
 
-class Net(nn.Module):
+class ConvNet(nn.Module):
     
     def __init__(self):
-        super(Net, self).__init__()
+        super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
         self.conv2_drop = nn.Dropout2d()
@@ -25,3 +25,27 @@ class Net(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=-1)
+
+###Simple Fully Connected Autoencoder
+class Autoencoder(nn.Module):
+    def __init__(self, in_dim=784, h_dim=400):
+        super(Autoencoder, self).__init__()
+
+        self.encoder = nn.Sequential(
+            nn.Linear(in_dim, h_dim),
+            nn.ReLU()
+            )
+
+        self.decoder = nn.Sequential(
+            nn.Linear(h_dim, in_dim),
+            nn.Sigmoid()
+            )
+
+
+    def forward(self, x):
+        """
+        Note: image dimension conversion will be handled by external methods
+        """
+        out = self.encoder(x)
+        out = self.decoder(out)
+        return out
